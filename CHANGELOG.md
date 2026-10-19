@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.5.1
+
+- Both launcher containers are declared unconditionally: the activity-bar icon
+  is always present, and the secondary (right) side bar container is added on
+  builds that implement `viewsContainers.secondarySidebar` (VS Code ≥ 1.94,
+  verified against the 1.137 workbench). The earlier version/context-key gating
+  could hide both containers at once — removed.
+- `DSH: Open Panel` now falls back through both containers and finally opens a
+  conversation panel, so the extension stays reachable on any build.
+
 ## 0.5.0
 
 - Launcher now lives in the **secondary (right) side bar** on VS Code builds that

@@ -2,12 +2,12 @@
   "name": "dsh-vscode",
   "displayName": "DeepSeek Harness",
   "description": "DeepSeek Harness in VS Code: activity-bar launcher, conversations beside the editor, plus editor-title and status-bar entries. Unofficial community extension.",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "publisher": "local",
   "private": true,
   "license": "MIT",
   "engines": {
-    "vscode": "^1.85.0"
+    "vscode": "^1.94.0"
   },
   "categories": [
     "Other"
@@ -41,16 +41,14 @@
         {
           "id": "dshHarness",
           "title": "DeepSeek Harness",
-          "icon": "media/dsh.svg",
-          "when": "dshHarness.doesNotSupportSecondarySidebar"
+          "icon": "media/dsh.svg"
         }
       ],
       "secondarySidebar": [
         {
           "id": "dshHarnessSidebar",
           "title": "DeepSeek Harness",
-          "icon": "media/dsh.svg",
-          "when": "!dshHarness.doesNotSupportSecondarySidebar"
+          "icon": "media/dsh.svg"
         }
       ]
     },
