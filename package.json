@@ -1,0 +1,57 @@
+{
+  "name": "dsh-vscode",
+  "displayName": "DeepSeek Harness",
+  "description": "Open the DeepSeek Harness web GUI in a VS Code panel, auto-starting the local dsh web server.",
+  "version": "0.1.0",
+  "publisher": "local",
+  "private": true,
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:dsh-vscode.openPanel"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "dsh-vscode.openPanel",
+        "title": "DSH: Open Panel"
+      }
+    ],
+    "configuration": {
+      "title": "DeepSeek Harness",
+      "properties": {
+        "dshHarness.repoPath": {
+          "type": "string",
+          "default": "/Users/baojian/Desktop/deepseek-harness-demo/deepseek-harness",
+          "description": "Path of the deepseek-harness checkout used to start `dsh web`."
+        },
+        "dshHarness.port": {
+          "type": "number",
+          "default": 3080,
+          "description": "Port of the dsh web server."
+        },
+        "dshHarness.autoStart": {
+          "type": "boolean",
+          "default": true,
+          "description": "Start `dsh web` automatically when it is not running."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "package": "vsce package --allow-missing-repository --skip-license"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3",
+    "typescript": "^5"
+  }
+}
