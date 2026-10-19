@@ -5,6 +5,16 @@
 >
 > 非官方社区扩展，与 DeepSeek 官方无隶属关系。DeepSeek Harness 本体是 MIT 协议的开源项目。
 
+## Install  /  安装
+
+**From GitHub (available now):** download `dsh-vscode-<version>.vsix` from
+[Releases](https://github.com/swording-k/dsh-vscode/releases), then run
+**Extensions: Install from VSIX…** from the Command Palette (`Cmd+Shift+P` on macOS).
+
+**From the Marketplace:** search **DeepSeek Harness** in the Extensions view.
+
+## What it does  /  它做什么
+
 Put DeepSeek Harness in your editor: the **left launcher** shows your folder's
 conversations; one click opens the full GUI **beside the editor** — ready to
 read and write your source tree.
