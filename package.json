@@ -130,7 +130,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/<your-username>/dsh-vscode"
+    "url": "https://github.com/swording-k/dsh-vscode"
   },
   "keywords": [
     "deepseek",
