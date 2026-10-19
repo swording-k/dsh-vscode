@@ -1,33 +1,24 @@
-/** Extension entry: register `DSH: Open Panel`. */
+/** Extension entry: activity-bar view, focus command, theme-change sync. */
 import * as vscode from 'vscode'
-import { ensureRunning, type ServerConfig } from './serverManager'
-import { createOrReveal } from './panel'
+import { logLine, readServerConfig } from './serverManager'
+import { syncTheme } from './themeSync'
+import { DshViewProvider } from './view'
 
 export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
-    vscode.commands.registerCommand('dsh-vscode.openPanel', async () => {
-      const cfg = readConfig()
-      try {
-        await vscode.window.withProgress(
-          { location: vscode.ProgressLocation.Notification, title: 'DSH: starting server…', cancellable: false },
-          () => ensureRunning(cfg),
-        )
-      } catch (err) {
-        vscode.window.showErrorMessage(`DSH: ${err instanceof Error ? err.message : String(err)}`)
-        return
-      }
-      createOrReveal(cfg.port)
+    vscode.window.registerWebviewViewProvider('dshHarness.view', new DshViewProvider()),
+    vscode.commands.registerCommand('dsh-vscode.openPanel', () => {
+      void vscode.commands.executeCommand('workbench.view.extension.dshHarness')
+    }),
+    vscode.window.onDidChangeActiveColorTheme(() => {
+      const cfg = readServerConfig()
+      if (!cfg.syncTheme) return
+      // A running GUI adopts the preference live; the next view load boots with it.
+      void syncTheme(cfg.port).catch(err =>
+        logLine(`[dsh] theme sync failed: ${err instanceof Error ? err.message : String(err)}`),
+      )
     }),
   )
-}
-
-function readConfig(): ServerConfig {
-  const c = vscode.workspace.getConfiguration('dshHarness')
-  return {
-    repoPath: c.get('repoPath', '/Users/baojian/Desktop/deepseek-harness-demo/deepseek-harness'),
-    port: c.get('port', 3080),
-    autoStart: c.get('autoStart', true),
-  }
 }
 
 /** The dsh web server keeps its own lifecycle; nothing to clean up here. */

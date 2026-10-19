@@ -1,8 +1,8 @@
 {
   "name": "dsh-vscode",
   "displayName": "DeepSeek Harness",
-  "description": "Open the DeepSeek Harness web GUI in a VS Code panel, auto-starting the local dsh web server.",
-  "version": "0.1.0",
+  "description": "DeepSeek Harness in VS Code: an activity-bar panel hosting the dsh web GUI, with server auto-start, workspace alignment, and theme sync.",
+  "version": "0.2.0",
   "publisher": "local",
   "private": true,
   "license": "MIT",
@@ -12,9 +12,6 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [
-    "onCommand:dsh-vscode.openPanel"
-  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
@@ -23,6 +20,24 @@
         "title": "DSH: Open Panel"
       }
     ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "dshHarness",
+          "title": "DeepSeek Harness",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "dshHarness": [
+        {
+          "type": "webview",
+          "id": "dshHarness.view",
+          "name": "Harness"
+        }
+      ]
+    },
     "configuration": {
       "title": "DeepSeek Harness",
       "properties": {
@@ -40,6 +55,11 @@
           "type": "boolean",
           "default": true,
           "description": "Start `dsh web` automatically when it is not running."
+        },
+        "dshHarness.syncTheme": {
+          "type": "boolean",
+          "default": true,
+          "description": "Write the dsh GUI appearance preference (dark/light) to match the VS Code color theme."
         }
       }
     }

@@ -78,3 +78,21 @@ dsh-vscode/
   （或先装 `code` CLI：命令面板 "Shell Command: Install 'code' command"）。
 - 项目位置：`~/Desktop/feishu-project-management-agent/dsh-vscode/`，独立 git 仓库，
   不污染 DSH 源码 checkout。
+
+## v0.2（2026-10-19 用户批准，已交付）
+
+v0.1 反馈后的修订。BFF 线协议已实测：一元 RPC 为 `POST /api/<endpoint>`，
+正文 `{type:'client-request', rpcId, method, payload}`，响应 `result` 是
+`{ok:true,value} | {ok:false,error}` 标签联合。
+
+1. **活动栏入口**：`viewsContainers.activitybar` + webview 视图 `dshHarness.view`
+   （Claude Code 同款位置）；`DSH: Open Panel` 命令改为聚焦该视图。编辑器标签页方案废弃。
+2. **工作区对齐**：读 VS Code 第一个工作区文件夹 → `workspace.list` 按 `path` 匹配，
+   没有则 `workspace.create({path})`，工作区无会话则 `session.create({workspaceId})`。
+   失败仅记输出频道，GUI 照常可用。GUI 无 URL 深链，用户在其会话列表点选。
+3. **主题跟随**：`settings.mutate` 写 `{ns:'ui-theme', ops:[{op:'set', path:['preference'],
+   value:'dark'|'light'}]}`，跟随 `window.activeColorTheme.kind`（含 HighContrast 归为 dark）。
+   在 iframe 加载前同步，运行中的 GUI 经 settings 订阅实时生效；主题切换事件同样只同步、
+   不重载页面。设置 `dshHarness.syncTheme`（默认开）可关闭。
+4. 新增文件：`src/rpc.ts`、`src/workspaceAlign.ts`、`src/themeSync.ts`、`src/view.ts`、
+   `media/icon.svg`；删除 `src/panel.ts`。

@@ -8,8 +8,11 @@ export interface ServerConfig {
   repoPath: string
   port: number
   autoStart: boolean
+  syncTheme: boolean
 }
 
+/** Default checkout that hosts `dsh web`; overridable via dshHarness.repoPath. */
+const DEFAULT_REPO_PATH = '/Users/baojian/Desktop/deepseek-harness-demo/deepseek-harness'
 /** Marker in the dsh web root HTML; distinguishes dsh from a foreign process on the port. */
 const BOOT_MARKER = '__DSH_BOOT__'
 const START_TIMEOUT_MS = 60_000
@@ -19,6 +22,23 @@ type Probe = 'dsh' | 'foreign' | 'free'
 
 let child: ChildProcess | undefined
 let output: vscode.OutputChannel | undefined
+
+/** Read the extension's server configuration. */
+export function readServerConfig(): ServerConfig {
+  const c = vscode.workspace.getConfiguration('dshHarness')
+  return {
+    repoPath: c.get('repoPath', DEFAULT_REPO_PATH),
+    port: c.get('port', 3080),
+    autoStart: c.get('autoStart', true),
+    syncTheme: c.get('syncTheme', true),
+  }
+}
+
+/** Append one line to the server output channel, creating it on first use. */
+export function logLine(line: string): void {
+  output ??= vscode.window.createOutputChannel('DeepSeek Harness Server')
+  output.appendLine(line)
+}
 
 /** Classify what answers on `port`: dsh web, a foreign HTTP process, or nothing. */
 async function probe(port: number): Promise<Probe> {
@@ -58,24 +78,23 @@ export async function ensureRunning(cfg: ServerConfig): Promise<void> {
     throw new Error(`dshHarness.repoPath does not exist: ${cfg.repoPath}`)
   }
   const node = resolveNode()
-  output ??= vscode.window.createOutputChannel('DeepSeek Harness Server')
-  output.appendLine(`[dsh] start: ${node} --import tsx/esm apps/cli/src/bin.ts web (cwd: ${cfg.repoPath})`)
+  logLine(`[dsh] start: ${node} --import tsx/esm apps/cli/src/bin.ts web (cwd: ${cfg.repoPath})`)
   child = spawn(node, ['--import', 'tsx/esm', 'apps/cli/src/bin.ts', 'web'], {
     cwd: cfg.repoPath,
     env: process.env,
   })
   child.stdout?.on('data', (d: Buffer) => output?.append(d.toString()))
   child.stderr?.on('data', (d: Buffer) => output?.append(d.toString()))
-  child.on('exit', code => output?.appendLine(`[dsh] server exited (code ${code ?? 'null'})`))
+  child.on('exit', code => logLine(`[dsh] server exited (code ${code ?? 'null'})`))
   const deadline = Date.now() + START_TIMEOUT_MS
   while (Date.now() < deadline) {
     await new Promise(r => setTimeout(r, POLL_INTERVAL_MS))
     if (child.exitCode !== null) {
-      output.show()
+      output?.show()
       throw new Error('dsh web exited during startup; see the "DeepSeek Harness Server" output channel.')
     }
     if ((await probe(cfg.port)) === 'dsh') return
   }
-  output.show()
+  output?.show()
   throw new Error('Timed out (60s) waiting for dsh web; see the "DeepSeek Harness Server" output channel.')
 }
