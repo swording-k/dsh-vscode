@@ -1,29 +1,48 @@
-/** Extension entry: launcher view, entry-point commands, status bar, theme sync. */
+/** Extension entry: launcher views, entry-point commands, status bar, theme sync. */
 import * as vscode from 'vscode'
 import { openNewChat } from './actions'
 import { logLine, readServerConfig } from './serverManager'
 import { syncTheme } from './themeSync'
 import { DshLauncherProvider } from './view'
 
-let provider: DshLauncherProvider | undefined
+/**
+ * First VS Code minor that renders `viewsContainers.secondarySidebar`. The
+ * activity-bar container is gated on the inverse, so older builds keep the
+ * left icon and newer builds place the launcher in the right sidebar.
+ */
+const SECONDARY_SIDEBAR_MIN_MINOR = 106
+
+let providers: DshLauncherProvider[] = []
 
 export function activate(context: vscode.ExtensionContext): void {
-  provider = new DshLauncherProvider()
+  const [, minor = '0'] = /^1\.(\d+)/.exec(vscode.version) ?? []
+  const supportsSecondarySidebar = Number(minor) >= SECONDARY_SIDEBAR_MIN_MINOR
+  // Context key drives the `when` clauses in package.json.
+  void vscode.commands.executeCommand('setContext', 'dshHarness.doesNotSupportSecondarySidebar', !supportsSecondarySidebar)
+
+  const barProvider = new DshLauncherProvider()
+  const sideProvider = new DshLauncherProvider()
+  providers = [barProvider, sideProvider]
+
   const status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100)
   status.text = '$(comment-discussion) DSH'
   status.tooltip = 'DeepSeek Harness'
   status.command = 'dsh-vscode.openPanel'
   status.show()
+
   context.subscriptions.push(
     status,
-    vscode.window.registerWebviewViewProvider('dshHarness.view', provider),
+    vscode.window.registerWebviewViewProvider('dshHarness.view', barProvider),
+    vscode.window.registerWebviewViewProvider('dshHarness.viewSecondary', sideProvider),
     vscode.commands.registerCommand('dsh-vscode.openPanel', () => {
-      void vscode.commands.executeCommand('workbench.view.extension.dshHarness')
+      const container = supportsSecondarySidebar ? 'workbench.view.extension.dshHarnessSidebar' : 'workbench.view.extension.dshHarness'
+      void vscode.commands.executeCommand(container)
     }),
     vscode.commands.registerCommand('dsh-vscode.newChat', () => guard(openNewChat)),
     vscode.commands.registerCommand('dsh-vscode.refresh', () => {
-      provider?.refresh()
-      void vscode.commands.executeCommand('workbench.view.extension.dshHarness')
+      for (const provider of providers) provider.refresh()
+      const container = supportsSecondarySidebar ? 'workbench.view.extension.dshHarnessSidebar' : 'workbench.view.extension.dshHarness'
+      void vscode.commands.executeCommand(container)
     }),
     vscode.window.onDidChangeActiveColorTheme(() => {
       const cfg = readServerConfig()

@@ -2,7 +2,7 @@
   "name": "dsh-vscode",
   "displayName": "DeepSeek Harness",
   "description": "DeepSeek Harness in VS Code: activity-bar launcher, conversations beside the editor, plus editor-title and status-bar entries. Unofficial community extension.",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "publisher": "local",
   "private": true,
   "license": "MIT",
@@ -41,7 +41,16 @@
         {
           "id": "dshHarness",
           "title": "DeepSeek Harness",
-          "icon": "media/dsh.svg"
+          "icon": "media/dsh.svg",
+          "when": "dshHarness.doesNotSupportSecondarySidebar"
+        }
+      ],
+      "secondarySidebar": [
+        {
+          "id": "dshHarnessSidebar",
+          "title": "DeepSeek Harness",
+          "icon": "media/dsh.svg",
+          "when": "!dshHarness.doesNotSupportSecondarySidebar"
         }
       ]
     },
@@ -50,6 +59,13 @@
         {
           "type": "webview",
           "id": "dshHarness.view",
+          "name": "Harness"
+        }
+      ],
+      "dshHarnessSidebar": [
+        {
+          "type": "webview",
+          "id": "dshHarness.viewSecondary",
           "name": "Harness"
         }
       ]
@@ -96,7 +112,7 @@
         {
           "command": "dsh-vscode.refresh",
           "group": "navigation",
-          "when": "view == dshHarness.view"
+          "when": "view == dshHarness.view || view == dshHarness.viewSecondary"
         }
       ]
     }
@@ -111,5 +127,8 @@
     "@vscode/vsce": "^3",
     "typescript": "^5"
   },
-  "icon": "media/icon.png"
+  "icon": "media/icon.png",
+  "activationEvents": [
+    "onStartupFinished"
+  ]
 }

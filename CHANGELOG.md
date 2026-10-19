@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.0
+
+- Launcher now lives in the **secondary (right) side bar** on VS Code builds that
+  support `viewsContainers.secondarySidebar`; the activity-bar container remains
+  for older builds, gated by the `dshHarness.doesNotSupportSecondarySidebar`
+  context key — the same pattern Claude Code and Codex use.
+
 ## 0.4.1
 
 - Official DeepSeek Harness whale mark replaces the placeholder icon.
