@@ -5,6 +5,8 @@
 >
 > 非官方社区扩展，与 DeepSeek 官方无隶属关系。DeepSeek Harness 本体是 MIT 协议的开源项目。
 
+**Landing page:** https://swording-k.github.io/dsh-vscode/
+
 ## Install  /  安装
 
 **From GitHub (available now):** download `dsh-vscode-<version>.vsix` from
