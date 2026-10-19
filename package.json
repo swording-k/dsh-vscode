@@ -3,7 +3,7 @@
   "displayName": "DeepSeek Harness",
   "description": "DeepSeek Harness in VS Code: a side-bar launcher, with conversations opened beside the editor — plus editor-title and status-bar shortcuts. Unofficial community extension.",
   "version": "0.6.0",
-  "publisher": "local",
+  "publisher": "KillianYang",
   "license": "MIT",
   "engines": {
     "vscode": "^1.94.0"
