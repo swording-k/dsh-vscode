@@ -1,10 +1,9 @@
-/** Activity-bar launcher: the VS Code folder's conversations, opened on the right. */
+/** Activity-bar launcher: the current folder's conversations, opened on the right. */
 import { randomUUID } from 'node:crypto'
 import * as vscode from 'vscode'
-import { connectSession, ensureWorkspace, listSessions, type SessionSummary, type WorkspaceRow } from './dshApi'
-import { openConversation } from './conversation'
-import { ensureRunning, logLine, readServerConfig } from './serverManager'
-import { syncTheme } from './themeSync'
+import { basename, ensureReady, openNewChat, openSession, workspaceFolder } from './actions'
+import { ensureWorkspace, listSessions, type SessionSummary, type WorkspaceRow } from './dshApi'
+import { logLine } from './serverManager'
 
 type LauncherMessage = { type: 'new' } | { type: 'open'; sessionId: string } | { type: 'refresh' }
 
@@ -19,38 +18,37 @@ export class DshLauncherProvider implements vscode.WebviewViewProvider {
     void this.load()
   }
 
+  /** Re-render the conversation list (view-title refresh command). */
+  refresh(): void {
+    void this.load()
+  }
+
   /** Connect, then render the current folder's conversation list. */
   private async load(): Promise<void> {
-    const cfg = readServerConfig()
     const view = this.view
     if (view === undefined) return
-    const folder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
+    const folder = workspaceFolder()
     if (folder === undefined) {
       view.webview.html = renderMessage('在 VS Code 中打开一个文件夹后，这里会显示它的对话。')
       return
     }
     view.webview.html = renderMessage('正在连接 dsh web 服务…')
+    let port: number
     try {
-      await ensureRunning(cfg)
+      port = await ensureReady()
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
       view.webview.html = renderMessage(`dsh web 启动失败：${message}`)
       void vscode.window.showErrorMessage(`DSH: ${message}`)
       return
     }
-    if (cfg.syncTheme) {
-      try {
-        await syncTheme(cfg.port)
-      } catch (err) {
-        logLine(`[dsh] theme sync failed: ${errMessage(err)}`)
-      }
-    }
     try {
-      const { workspace } = await ensureWorkspace(cfg.port, folder)
-      await this.renderList(cfg.port, workspace)
+      const { workspace } = await ensureWorkspace(port, folder)
+      await this.renderList(port, workspace)
     } catch (err) {
-      logLine(`[dsh] workspace align failed: ${errMessage(err)}`)
-      view.webview.html = renderMessage(`工作区对齐失败：${errMessage(err)}`)
+      const message = err instanceof Error ? err.message : String(err)
+      logLine(`[dsh] workspace align failed: ${message}`)
+      view.webview.html = renderMessage(`工作区对齐失败：${message}`)
     }
   }
 
@@ -65,34 +63,18 @@ export class DshLauncherProvider implements vscode.WebviewViewProvider {
 
   /** Launcher actions: new chat, open a session, refresh. */
   private async onMessage(message: LauncherMessage): Promise<void> {
-    const cfg = readServerConfig()
-    const folder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
-    if (folder === undefined) return
-    if (message.type === 'refresh') {
-      await this.load()
-      return
-    }
     try {
-      const { workspace, archived } = await ensureWorkspace(cfg.port, folder)
-      const sessionId = message.type === 'open'
-        ? message.sessionId
-        : await connectSession(cfg.port, workspace, archived)
-      const summary = (await listSessions(cfg.port)).find(s => s.sessionId === sessionId)
-      const label = summary?.title ?? (summary?.blank === true ? '新对话' : basename(folder))
-      openConversation(cfg.port, sessionId, `${label} · DSH`)
-      if (message.type === 'new') await this.renderList(cfg.port, workspace)
+      if (message.type === 'refresh') {
+        await this.load()
+        return
+      }
+      if (message.type === 'new') await openNewChat()
+      else await openSession(message.sessionId)
+      await this.load()
     } catch (err) {
-      void vscode.window.showErrorMessage(`DSH: ${errMessage(err)}`)
+      void vscode.window.showErrorMessage(`DSH: ${err instanceof Error ? err.message : String(err)}`)
     }
   }
-}
-
-function errMessage(err: unknown): string {
-  return err instanceof Error ? err.message : String(err)
-}
-
-function basename(path: string): string {
-  return path.split('/').filter(Boolean).pop() ?? path
 }
 
 /** Placeholder page for loading and error states, styled after VS Code itself. */

@@ -1,8 +1,8 @@
 {
   "name": "dsh-vscode",
   "displayName": "DeepSeek Harness",
-  "description": "DeepSeek Harness in VS Code: activity-bar launcher with conversations opened beside the editor, server auto-start, workspace alignment, and theme sync.",
-  "version": "0.3.0",
+  "description": "DeepSeek Harness in VS Code: activity-bar launcher, conversations beside the editor, plus editor-title and status-bar entries. Unofficial community extension.",
+  "version": "0.4.1",
   "publisher": "local",
   "private": true,
   "license": "MIT",
@@ -17,7 +17,23 @@
     "commands": [
       {
         "command": "dsh-vscode.openPanel",
-        "title": "DSH: Open Panel"
+        "title": "DSH: Open Panel",
+        "category": "DeepSeek Harness"
+      },
+      {
+        "command": "dsh-vscode.newChat",
+        "title": "New Conversation",
+        "category": "DeepSeek Harness",
+        "icon": {
+          "light": "media/dsh.svg",
+          "dark": "media/dsh.svg"
+        }
+      },
+      {
+        "command": "dsh-vscode.refresh",
+        "title": "Refresh Conversations",
+        "category": "DeepSeek Harness",
+        "icon": "$(refresh)"
       }
     ],
     "viewsContainers": {
@@ -25,7 +41,7 @@
         {
           "id": "dshHarness",
           "title": "DeepSeek Harness",
-          "icon": "media/icon.svg"
+          "icon": "media/dsh.svg"
         }
       ]
     },
@@ -43,8 +59,8 @@
       "properties": {
         "dshHarness.repoPath": {
           "type": "string",
-          "default": "/Users/baojian/Desktop/deepseek-harness-demo/deepseek-harness",
-          "description": "Path of the deepseek-harness checkout used to start `dsh web`."
+          "default": "",
+          "description": "Optional path of a deepseek-harness checkout; when empty or missing, the extension runs a `dsh` executable from PATH instead."
         },
         "dshHarness.port": {
           "type": "number",
@@ -60,8 +76,29 @@
           "type": "boolean",
           "default": true,
           "description": "Write the dsh GUI appearance preference (dark/light) to match the VS Code color theme."
+        },
+        "dshHarness.command": {
+          "type": "string",
+          "default": "dsh",
+          "description": "Command used to start the web server when no checkout path is configured (e.g. `dsh`, `pnpm dsh`)."
         }
       }
+    },
+    "menus": {
+      "editor/title": [
+        {
+          "command": "dsh-vscode.newChat",
+          "group": "navigation@10",
+          "when": "workspaceFolderCount > 0"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "dsh-vscode.refresh",
+          "group": "navigation",
+          "when": "view == dshHarness.view"
+        }
+      ]
     }
   },
   "scripts": {
@@ -73,5 +110,6 @@
     "@types/vscode": "^1.85.0",
     "@vscode/vsce": "^3",
     "typescript": "^5"
-  }
+  },
+  "icon": "media/icon.png"
 }

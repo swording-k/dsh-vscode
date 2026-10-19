@@ -3,14 +3,35 @@ import * as vscode from 'vscode'
 
 let panel: vscode.WebviewPanel | undefined
 let currentUrl: string | undefined
+let deepLinkSupport: boolean | undefined
+
+/**
+ * Whether the running GUI accepts `#session=<id>`. Stock dsh releases do not;
+ * the custom-branch patch does. Checked once per session by inspecting the
+ * served client bundle, so a stock server degrades to opening the plain GUI.
+ */
+async function supportsDeepLink(port: number): Promise<boolean> {
+  if (deepLinkSupport !== undefined) return deepLinkSupport
+  try {
+    const res = await fetch(`http://127.0.0.1:${port}/plugins/@deepseek-ai/dsh-client-runtime/client.js`, {
+      signal: AbortSignal.timeout(3_000),
+    })
+    if (!res.ok) return false
+    deepLinkSupport = (await res.text()).includes('#session=')
+    return deepLinkSupport
+  } catch {
+    return false
+  }
+}
 
 /**
  * Open the conversation panel on the given session, or switch it there.
- * The GUI consumes `#session=<id>` at boot, so a session switch reloads
- * the iframe with the new deep link.
+ * With deep-link support the iframe reloads onto the session; without it the
+ * GUI opens normally and the user picks the conversation there.
  */
-export function openConversation(port: number, sessionId: string, title: string): void {
-  const url = `http://127.0.0.1:${port}/#session=${sessionId}`
+export async function openConversation(port: number, sessionId: string, title: string): Promise<void> {
+  const base = `http://127.0.0.1:${port}`
+  const url = await supportsDeepLink(port) ? `${base}/#session=${sessionId}` : base
   if (panel === undefined) {
     panel = vscode.window.createWebviewPanel('dshHarness.conversation', title, vscode.ViewColumn.Beside, {
       enableScripts: true,

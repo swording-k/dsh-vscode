@@ -1,0 +1,28 @@
+# Changelog
+
+## 0.4.1
+
+- Official DeepSeek Harness whale mark replaces the placeholder icon.
+- Editor-title button (top-right of the editor) and a status-bar entry open DSH.
+- View-title refresh button on the launcher.
+- Cross-machine launch: an empty `dshHarness.repoPath` falls back to the
+  `dshHarness.command` executable (default `dsh` from PATH).
+- Deep-link support is detected at runtime; a stock dsh server degrades to
+  opening the GUI without session targeting.
+
+## 0.4.0
+
+- Editor-title and status-bar entry points; configurable launch command.
+
+## 0.3.0
+
+- Left launcher with the folder's conversation list; conversations open in a
+  panel beside the editor via the `#session=<id>` deep link.
+
+## 0.2.0
+
+- Activity-bar view, workspace alignment, and theme sync with VS Code.
+
+## 0.1.0
+
+- `DSH: Open Panel` opens the GUI in an editor panel, auto-starting `dsh web`.
