@@ -2,6 +2,7 @@
 import * as vscode from 'vscode'
 import { connectSession, ensureWorkspace, listSessions } from './dshApi'
 import { openConversation } from './conversation'
+import { postServerReady } from './registry'
 import { ensureRunning, readServerConfig } from './serverManager'
 import { syncTheme } from './themeSync'
 
@@ -9,6 +10,7 @@ import { syncTheme } from './themeSync'
 export async function ensureReady(): Promise<number> {
   const cfg = readServerConfig()
   await ensureRunning(cfg)
+  await postServerReady?.(cfg.port, cfg.repoPath)
   if (cfg.syncTheme) {
     try {
       await syncTheme(cfg.port)

@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto'
 import * as vscode from 'vscode'
 import { basename, ensureReady, openNewChat, openSession, workspaceFolder } from './actions'
 import { ensureWorkspace, listSessions, type SessionSummary, type WorkspaceRow } from './dshApi'
+import { L } from './loc'
 import { logLine } from './serverManager'
 
 type LauncherMessage = { type: 'new' } | { type: 'open'; sessionId: string } | { type: 'refresh' }
@@ -29,16 +30,16 @@ export class DshLauncherProvider implements vscode.WebviewViewProvider {
     if (view === undefined) return
     const folder = workspaceFolder()
     if (folder === undefined) {
-      view.webview.html = renderMessage('在 VS Code 中打开一个文件夹后，这里会显示它的对话。')
+      view.webview.html = renderMessage(L.noFolder)
       return
     }
-    view.webview.html = renderMessage('正在连接 dsh web 服务…')
+    view.webview.html = renderMessage(L.loading)
     let port: number
     try {
       port = await ensureReady()
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
-      view.webview.html = renderMessage(`dsh web 启动失败：${message}`)
+      view.webview.html = renderMessage(`${L.startFailed}${message}`)
       void vscode.window.showErrorMessage(`DSH: ${message}`)
       return
     }
@@ -48,7 +49,7 @@ export class DshLauncherProvider implements vscode.WebviewViewProvider {
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
       logLine(`[dsh] workspace align failed: ${message}`)
-      view.webview.html = renderMessage(`工作区对齐失败：${message}`)
+      view.webview.html = renderMessage(`${L.alignFailed}${message}`)
     }
   }
 
@@ -91,7 +92,7 @@ function renderLauncher(ws: WorkspaceRow, sessions: SessionSummary[]): string {
   const nonce = randomUUID()
   const rows = sessions.map(s => `
     <div class="row" data-session="${escapeHtml(s.sessionId)}">
-      <span class="name">${escapeHtml(label(s))}${s.running ? '<span class="run">运行中</span>' : ''}</span>
+      <span class="name">${escapeHtml(s.title ?? (s.blank ? L.labelNew : L.labelDefault))}${s.running ? `<span class="run">${L.running}</span>` : ''}</span>
       <span class="time">${escapeHtml(timeAgo(s.updatedAt))}</span>
     </div>`).join('')
   return `<!doctype html>
@@ -114,9 +115,9 @@ function renderLauncher(ws: WorkspaceRow, sessions: SessionSummary[]): string {
 </head><body>
 <div class="folder">${escapeHtml(basename(ws.path))}</div>
 <div class="path">${escapeHtml(ws.path)}</div>
-<button class="new" id="new">＋ 新建对话</button>
-${rows === '' ? '<div class="empty">还没有对话，点上面开始。</div>' : rows}
-<div class="refresh" id="refresh">刷新列表</div>
+<button class="new" id="new">${L.newConversation}</button>
+${rows === '' ? `<div class="empty">${L.emptyList}</div>` : rows}
+<div class="refresh" id="refresh">${L.refresh}</div>
 <script nonce="${nonce}">
   const vscode = acquireVsCodeApi()
   document.getElementById('new').onclick = () => vscode.postMessage({ type: 'new' })
@@ -128,18 +129,13 @@ ${rows === '' ? '<div class="empty">还没有对话，点上面开始。</div>' 
 </body></html>`
 }
 
-function label(s: SessionSummary): string {
-  if (s.title !== undefined && s.title !== '') return s.title
-  return s.blank ? '新对话' : '对话'
-}
-
 function timeAgo(updatedAt: number): string {
   const minutes = Math.max(0, Math.round((Date.now() - updatedAt) / 60_000))
-  if (minutes < 1) return '刚刚'
-  if (minutes < 60) return `${minutes} 分钟前`
+  if (minutes < 1) return L.justNow
+  if (minutes < 60) return L.minutesAgo(minutes)
   const hours = Math.round(minutes / 60)
-  if (hours < 24) return `${hours} 小时前`
-  return `${Math.round(hours / 24)} 天前`
+  if (hours < 24) return L.hoursAgo(hours)
+  return L.daysAgo(Math.round(hours / 24))
 }
 
 function escapeHtml(text: string): string {

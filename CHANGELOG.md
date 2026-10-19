@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.6.0 — Publish-ready
+
+- Bilingual launcher UI (English / 中文 depending on VS Code language).
+- Companion `dsh-plugin-deep-link` client plugin — auto-installed for stock
+  `@deepseek-ai/dsh` so the GUI lands on the pinned conversation without an
+  extra click.
+- Publish metadata: repository, icon, keywords; `private: true` removed.
+- Full bilingual README with usage guide, settings table, and publish
+  instructions.
+
 ## 0.5.1
 
 - Both launcher containers are declared unconditionally: the activity-bar icon

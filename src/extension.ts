@@ -2,12 +2,17 @@
 import * as vscode from 'vscode'
 import { openNewChat } from './actions'
 import { logLine, readServerConfig } from './serverManager'
+import { ensureDeepLinkPlugin } from './pluginSetup'
+import { setPostServerReady } from './registry'
 import { syncTheme } from './themeSync'
 import { DshLauncherProvider } from './view'
 
 let providers: DshLauncherProvider[] = []
+let extPath = ''
 
 export function activate(context: vscode.ExtensionContext): void {
+  extPath = context.extensionPath
+  setPostServerReady((port, repoPath) => ensureDeepLinkPlugin(port, extPath, repoPath))
   const barProvider = new DshLauncherProvider()
   const sideProvider = new DshLauncherProvider()
   providers = [barProvider, sideProvider]
@@ -25,13 +30,12 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand('dsh-vscode.openPanel', () => guard(revealLauncher)),
     vscode.commands.registerCommand('dsh-vscode.newChat', () => guard(openNewChat)),
     vscode.commands.registerCommand('dsh-vscode.refresh', () => {
-      for (const provider of providers) provider.refresh()
+      for (const p of providers) p.refresh()
       void revealLauncher()
     }),
     vscode.window.onDidChangeActiveColorTheme(() => {
       const cfg = readServerConfig()
       if (!cfg.syncTheme) return
-      // A running GUI adopts the preference live; the next view load boots with it.
       void syncTheme(cfg.port).catch(err =>
         logLine(`[dsh] theme sync failed: ${err instanceof Error ? err.message : String(err)}`),
       )
@@ -41,27 +45,28 @@ export function activate(context: vscode.ExtensionContext): void {
 
 /**
  * Focus the launcher container. Both the activity-bar and secondary-side-bar
- * containers are declared unconditionally; the first reveal that succeeds wins,
- * and a build that honours neither still gets a conversation panel.
+ * containers are registered unconditionally; the first reveal that succeeds wins.
  */
 async function revealLauncher(): Promise<void> {
-  for (const container of ['workbench.view.extension.dshHarnessSidebar', 'workbench.view.extension.dshHarness']) {
-    try {
-      await vscode.commands.executeCommand(container)
-      return
-    } catch {
-      // Container absent on this build; try the next entry point.
-    }
+  for (const id of ['workbench.view.extension.dshHarnessSidebar', 'workbench.view.extension.dshHarness']) {
+    try { await vscode.commands.executeCommand(id); return } catch { /* absent on this build */ }
   }
   await openNewChat()
 }
 
-/** Run an action, surfacing failures as a notification instead of an unhandled rejection. */
+/** Surface unhandled failures as a notification. */
 function guard(action: () => Promise<void>): void {
   void action().catch(err => {
     void vscode.window.showErrorMessage(`DSH: ${err instanceof Error ? err.message : String(err)}`)
   })
 }
 
-/** The dsh web server keeps its own lifecycle; nothing to clean up here. */
+/**
+ * Ensure the session-targeting plugin is available before the launcher
+ * asks for its first conversation.  Called by `actions.ensureReady`.
+ */
+export async function ensurePlugin(port: number, repoPath: string): Promise<void> {
+  await ensureDeepLinkPlugin(port, extPath, repoPath)
+}
+
 export function deactivate(): void {}

@@ -1,57 +1,85 @@
 # DeepSeek Harness for VS Code
 
-> **非官方社区扩展**：本项目由社区开发，与 DeepSeek 官方无隶属关系。
-> DeepSeek Harness 本体是 MIT 协议的开源项目（[deepseek-ai/deepseek-harness](https://github.com/deepseek-ai/deepseek-harness)）。
+> **Unofficial community extension** — not affiliated with DeepSeek.  
+> The DeepSeek Harness runtime is MIT-licensed open source ([deepseek-ai/deepseek-harness](https://github.com/deepseek-ai/deepseek-harness)).
+>
+> 非官方社区扩展，与 DeepSeek 官方无隶属关系。DeepSeek Harness 本体是 MIT 协议的开源项目。
 
-在 VS Code 里使用 DeepSeek Harness：左侧启动器列出当前文件夹的对话，
-点一下就在**编辑器右侧**打开完整 GUI，并直接落到那条对话。
+Put DeepSeek Harness in your editor: the **left launcher** shows your folder's
+conversations; one click opens the full GUI **beside the editor** — ready to
+read and write your source tree.
 
-## 入口（四个都能找到）
+用 VS Code 管理 DeepSeek Harness 对话：左侧启动器列出当前文件夹的历史对话，一点就在编辑器右侧打开完整 GUI，直接读写你的项目文件。
 
-| 位置 | 内容 |
+## Entry points  /  入口（four places to reach it）
+
+| Location | What |
 |---|---|
-| 左侧活动栏 | DeepSeek Harness 图标 → 启动器（当前文件夹 + 对话列表 + 新建对话） |
-| 编辑器右上角 | 鲸鱼图标按钮 → 为当前文件夹新建对话 |
-| 底部状态栏右侧 | `DSH` → 打开启动器 |
-| 命令面板 | `DSH: Open Panel` / `DSH: New Conversation` / `DSH: Refresh Conversations` |
+| Left side bar (activity bar) | Whale icon → launcher with folder name, session list, and a new-chat button |
+| Secondary side bar (right) | Same launcher, native right-side slot (VS Code ≥ 1.94) |
+| Editor title (top-right) | Whale button → new conversation for the active folder |
+| Status bar (bottom-right) | `DSH` → open the launcher |
+| Command palette | `DSH: Open Panel`, `DSH: New Conversation`, `DSH: Refresh Conversations` |
 
-## 先决条件
+## Prerequisites  /  先决条件
 
 - Node.js ≥ 22
-- DeepSeek Harness：`npm i -g dsh`（扩展默认从 PATH 调用 `dsh`），
-  或者把 `dshHarness.repoPath` 指向一份 deepseek-harness 源码 checkout。
+- DeepSeek Harness: `npm i -g @deepseek-ai/dsh`  
+  The extension calls the `dsh` executable on PATH by default, or a
+  checkout when `dshHarness.repoPath` is set.
+- An API key: set `DEEPSEEK_API_KEY` in your environment or use `~/.dsh/.credentials.yaml`.  
+  The GUI's built-in Account settings let you enter the key on first launch.
 
-## 使用
+## Usage  /  使用
 
-1. 点左侧活动栏的 DeepSeek Harness 图标。
-2. 启动器显示 VS Code 当前文件夹及其对话；点"＋ 新建对话"或某条对话，
-   完整 GUI 在编辑器右侧打开。
-3. 服务未运行时自动启动；主题跟随 VS Code 深/浅色。
+1. Click the DeepSeek Harness icon in the left side bar (or use any entry point above).
+2. The launcher shows your VS Code folder and its conversations; click **`+ New Conversation`**
+   or pick a saved one. The full DSH GUI opens **on the right**, ready to read/write
+   your workspace files.
+3. The server starts automatically on first use; the theme follows your
+   VS Code colour scheme (disable `dshHarness.syncTheme` if you prefer manual control).
 
-## 设置
+## Settings  /  设置
 
-| 设置 | 默认 | 说明 |
+| Setting | Default | Notes |
 |---|---|---|
-| `dshHarness.repoPath` | `""` | 可选：deepseek-harness 源码 checkout 路径（空则用 `dsh` 可执行文件） |
-| `dshHarness.command` | `dsh` | 从 PATH 启动服务时使用的命令，如 `dsh`、`pnpm dsh` |
-| `dshHarness.port` | `3080` | dsh web 服务端口 |
-| `dshHarness.autoStart` | `true` | 服务未运行时是否自动拉起 |
-| `dshHarness.syncTheme` | `true` | 让 DSH 外观跟随 VS Code 深/浅主题 |
+| `dshHarness.repoPath` | `""` | Optional path to a deepseek-harness source checkout (leave empty to rely on `dsh` from PATH) |
+| `dshHarness.command` | `dsh` | Executable used when `repoPath` is empty (e.g. `dsh`, `pnpm dsh`) |
+| `dshHarness.port` | `3080` | dsh web server port |
+| `dshHarness.autoStart` | `true` | Start the server automatically when it is not running |
+| `dshHarness.syncTheme` | `true` | Keep the DSH colour scheme in sync with your VS Code theme |
 
-## 已知限制
+## Publishing  /  发布
 
-- **对话直落（深链 `#session=<id>`）需要带该补丁的 DSH 构建**。当前仓库配套的
-  custom 分支已包含（提交 `cb0e6220c5`）。使用官方 npm 版 `dsh` 时，扩展会检测到
-  不支持并降级为"打开 GUI，由你在里面选对话"，其余功能不受影响。
-- 右侧"辅助边栏"位置无法由扩展声明式贡献；拖动活动栏图标到右侧即可，
-  VS Code 会记住位置。
+The extension ships with a companion `dsh-plugin-deep-link` client plugin under
+`plugin/`. On a stock `dsh` install it is auto-installed into the web profile
+via `dsh plugin --profile web add …`. A source checkout already includes the
+deep-link patch and does not need it.
 
-## 开发
+Before publishing to the Marketplace:
 
-```
+1. Create a publisher: [VS Code Marketplace](https://marketplace.visualstudio.com/manage) → create publisher.
+2. Generate a Personal Access Token (Azure DevOps → Marketplace scope → **Manage**).
+3. Log in: `npx @vscode/vsce login <publisher-id>`.
+4. Replace `publisher` in `package.json` with your publisher id.
+5. Replace the placeholder `repository.url` in `package.json` with your real GitHub repo URL.
+6. Run `npm run package` (produces a `.vsix`) then `npx @vscode/vsce publish`.
+
+## Known issues  /  已知限制
+
+- Session targeting via `#session=<id>` relies on the `dsh-plugin-deep-link`
+  plugin. Stock `@deepseek-ai/dsh` users get it auto-installed; source-checkout
+  users on the `custom` branch already have it patched. Without either, the GUI
+  opens normally and you select the conversation in the GUI sidebar — one extra click.
+- The secondary side bar slot is not shown on VS Code builds older than 1.94.
+- Multi-root workspaces are not yet supported (only the first folder is aligned).
+
+## Development  /  开发
+
+```bash
 npm install
-npm run compile   # tsc → out/
-npm run package   # 产出 .vsix
+npm run compile        # tsc → out/
+npm run package        # produces .vsix
 ```
 
-服务日志在 VS Code 输出面板的 "DeepSeek Harness Server" 频道。
+Server logs appear in the **Output** panel under *DeepSeek Harness Server*.
