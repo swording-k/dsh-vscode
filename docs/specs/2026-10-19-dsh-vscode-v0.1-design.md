@@ -96,3 +96,20 @@ v0.1 反馈后的修订。BFF 线协议已实测：一元 RPC 为 `POST /api/<en
    不重载页面。设置 `dshHarness.syncTheme`（默认开）可关闭。
 4. 新增文件：`src/rpc.ts`、`src/workspaceAlign.ts`、`src/themeSync.ts`、`src/view.ts`、
    `media/icon.svg`；删除 `src/panel.ts`。
+
+## v0.3（2026-10-19 用户反馈迭代，已交付）
+
+v0.2 的对齐其实成功创建了工作区（服务端留痕），但 GUI 启动时恢复
+"persisted selection"（localStorage `dsh.sessions.current`），永远落回旧会话；
+且用户要的形态是 Claude Code 式"左启动器、右对话"。修订：
+
+1. **DSH 深链（custom 分支补丁 cb0e6220c5）**：`packages/client/runtime` 的 sessions
+   service 构造时读 `#session=<id>` 覆盖恢复的选中项（读后 replaceState 清除，
+   Node 环境 location 守卫保持惰性）。已 tsc+tsdown 重建，服务 no-cache 直接生效。
+2. **左启动器 / 右对话**：活动栏视图改为启动器（当前文件夹 + 会话列表 +
+   新建对话按钮，nonce CSP）；点击经 `ViewColumn.Beside` 在编辑器右侧开
+   `createWebviewPanel`（retainContextWhenHidden），iframe URL 带深链。
+   新建复用 GUI 的 connectWorkspace 规则（blank+cwd+成员+未归档，否则创建）。
+3. `src/dshApi.ts` 取代 `src/workspaceAlign.ts`（类型化 RPC 包装：listWorkspaces/
+   listSessions/ensureWorkspace/connectSession）。
+4. 会话切换 = 重设 iframe URL（深链重载）；同 URL 不重载。

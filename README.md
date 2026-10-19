@@ -6,10 +6,10 @@
 ## 使用
 
 1. 点击 VS Code **左侧活动栏的 DeepSeek Harness 图标**（或命令面板 → `DSH: Open Panel`）。
-2. 服务未运行时自动启动（约几秒），已在运行则直接复用。
-3. 扩展会自动确保 VS Code 当前文件夹有对应的 DSH 工作区和会话；
-   在面板会话列表里点选它，agent 读写的就是你编辑器里的同一批文件。
-4. 扩展会把 DSH 的外观偏好同步成 VS Code 的深/浅色（`dshHarness.syncTheme` 可关）。
+2. 左侧显示 **VS Code 当前文件夹**的对话列表；点"＋ 新建对话"或某条对话，
+   完整 DSH GUI 会**在编辑器右侧**打开，并直接落到那条对话。
+3. 服务未运行时自动启动；主题跟随 VS Code 深/浅色（`dshHarness.syncTheme` 可关）。
+4. 依赖 DSH custom 分支的深链补丁（`#session=<id>`，见 DSH checkout 提交 cb0e6220c5）。
 
 ## 设置
 

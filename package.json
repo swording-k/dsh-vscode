@@ -1,8 +1,8 @@
 {
   "name": "dsh-vscode",
   "displayName": "DeepSeek Harness",
-  "description": "DeepSeek Harness in VS Code: an activity-bar panel hosting the dsh web GUI, with server auto-start, workspace alignment, and theme sync.",
-  "version": "0.2.0",
+  "description": "DeepSeek Harness in VS Code: activity-bar launcher with conversations opened beside the editor, server auto-start, workspace alignment, and theme sync.",
+  "version": "0.3.0",
   "publisher": "local",
   "private": true,
   "license": "MIT",

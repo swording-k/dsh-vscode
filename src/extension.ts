@@ -1,12 +1,12 @@
-/** Extension entry: activity-bar view, focus command, theme-change sync. */
+/** Extension entry: launcher view, focus command, theme-change sync. */
 import * as vscode from 'vscode'
 import { logLine, readServerConfig } from './serverManager'
 import { syncTheme } from './themeSync'
-import { DshViewProvider } from './view'
+import { DshLauncherProvider } from './view'
 
 export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider('dshHarness.view', new DshViewProvider()),
+    vscode.window.registerWebviewViewProvider('dshHarness.view', new DshLauncherProvider()),
     vscode.commands.registerCommand('dsh-vscode.openPanel', () => {
       void vscode.commands.executeCommand('workbench.view.extension.dshHarness')
     }),
